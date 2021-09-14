@@ -1,11 +1,11 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
 import subprocess
+from tkinter import *
 
-st.title('Guía de ventas')
-#this verifies if someone pressed the button
-if(st.button('Calcular tasa del día')):
-    subprocess.run(['py','run.py'], cwd='./Scraper/Scraper/spiders')
-    
-st.sidebar.header('User Input Features')
+#subprocess.run(['py','run.py'], cwd='./Scraper/Scraper/spiders')
+
+raiz = Tk()
+raiz.title('Facturacion')
+raiz.geometry('1080x600')
+raiz.mainloop()
