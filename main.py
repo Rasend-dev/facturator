@@ -20,17 +20,34 @@ def _show_currency():
     label_currencies.grid(row=0,column=1)
     button_slide['state'] = DISABLED
 
+memory = {}
+root.count = 0 #posicionamiento de los frames
 
 def _charge(name):
-    print(name)
+    precio = prueba_botones[name]
+    if name in memory.keys(): #Caso de que ya este el nombre de la comanda
+        memory[name][0] += 1
+        memory[name].pop() #Eliminamos el resultado anterior para evitar que se aglomeren
+        memory[name].append(precio*memory[name][0]) # precio multiplicado
+        memory[name][1]['text'] = f'{memory[name][0]}x {name}\n {memory[name][2]}$'
+    else: #Caso de que no se haya añadido aun el nombre de la comanda
+        memory[name] = [1] #Creamos una lista con el numero de veces que se ha invocado el platillo
+        platillo = Frame(sum_side) #hacemos un frame
+        platillo.grid(row=1,column=root.count,padx=5) #lo posicionamos utilizando el root.count
+        memory[name].append(Label(platillo,text=f'{name}\n{precio}$')) #colocamos el label en la memoria para poder trabajar con el más tarde
+        memory[name].append(precio)#colocamos el precio en la memoria
+        memory[name][1].grid(row=1,column=0) #la posicionamos
+        root.count += 1 #aumentamos el root.count para seguir posicionando
+    print(memory)
 
 def _load_hero(dicti):
     """
     A function that create buttons for the hero part
+    it recieves a dictionary and place the name in the sum part
     """
     platillo = []
-    for i in dicti.keys():
-        platillo.append(Button(hero,text=i,padx=30,pady=30,command=lambda i=i: _charge(i))) #usando i=i en nuesta funcion lambda hacemos que el valor en el que esta el for se guarde
+    for i in dicti.keys(): #usando i=i en nuesta funcion lambda hacemos que el valor en el que esta el for se guarde
+        platillo.append(Button(hero,text=i,padx=30,pady=30,command=lambda i=i: _charge(i))) 
 
     for i, name in enumerate(platillo):
         platillo[i].grid(row=4,column=i,padx=20)
@@ -51,15 +68,15 @@ def _load_price_label(dicti):
 
 #slide side
 slide = LabelFrame(root,text='Export zone',padx=20,pady=200)
-slide.grid(row=0,column=0,sticky='n')
+slide.grid(row=0,column=0,sticky='w')
 
 #principal side
 hero = LabelFrame(root,text='Este es la parte principal',pady=120)
-hero.grid(row=0,column=1,sticky='n')
+hero.grid(row=0,column=1,sticky='w')
 
 #sum side
-sum_side = LabelFrame(root,text='esto es una prueba',padx=300,pady=50)
-sum_side.grid(row=1,column=1,sticky='s')
+sum_side = LabelFrame(root,text='esto es una prueba',pady=10)
+sum_side.grid(row=1,column=1,sticky='w')
 
 #Slider part
 button_slide = Button(slide,text='Extract todays currency',padx=10,pady=10,command=_show_currency)
@@ -79,7 +96,7 @@ _load_hero(prueba_botones)
 _load_price_label(prueba_botones)
 
 
-sum_button = Button(sum_side,text='prueba',padx=10,pady=10)
-sum_button.pack()
+sum_button = Button(sum_side,text='hacer venta')
+sum_button.grid(row=0,column=0)
 
 root.mainloop()
