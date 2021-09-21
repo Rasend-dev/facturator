@@ -23,9 +23,20 @@ def _show_currency():
 memory = {}
 root.count = 0 #posicionamiento de los frames
 
+def _minus(name):
+    if memory[name][0] > 1:
+        memory[name][0] -= 1 #Restamos al numero de veces que fue pulsado el boton
+        memory[name][2] = memory[name][2] - prueba_botones[name] #restamos el precio
+        memory[name][1]['text'] = f'{memory[name][0]}x {name}\n {memory[name][2]}$ '
+
+def _delete(platillo,name):
+    platillo.destroy()
+    memory.pop(name)
+    root.count -= 1
+
 def _charge(name):
     precio = prueba_botones[name]
-    if name in memory.keys(): #Caso de que ya este el nombre de la comanda
+    if name in memory.keys(): #Caso de que ya este el nombre en la comanda
         memory[name][0] += 1
         memory[name].pop() #Eliminamos el resultado anterior para evitar que se aglomeren
         memory[name].append(precio*memory[name][0]) # precio multiplicado
@@ -34,11 +45,15 @@ def _charge(name):
         memory[name] = [1] #Creamos una lista con el numero de veces que se ha invocado el platillo
         platillo = Frame(sum_side) #hacemos un frame
         platillo.grid(row=1,column=root.count,padx=5) #lo posicionamos utilizando el root.count
+        boton = Button(platillo,text='-',command=lambda :_minus(name))#creamos los botones para modificar la comanda
+        boton_2 = Button(platillo, text='x',command=lambda: _delete(platillo,name))
+        boton.grid(row=0,column=0,sticky='e')
+        boton_2.grid(row=0,column=1)
         memory[name].append(Label(platillo,text=f'{name}\n{precio}$')) #colocamos el label en la memoria para poder trabajar con el más tarde
         memory[name].append(precio)#colocamos el precio en la memoria
         memory[name][1].grid(row=1,column=0) #la posicionamos
         root.count += 1 #aumentamos el root.count para seguir posicionando
-    print(memory)
+    print(memory.keys())
 
 def _load_hero(dicti):
     """
