@@ -20,40 +20,65 @@ def _show_currency():
     label_currencies.grid(row=0,column=1)
     button_slide['state'] = DISABLED
 
-memory = {}
+memory = {} #Posicionamiento en la comanda
+frames_comanda = {} #Memorizado de los frames
 root.count = 0 #posicionamiento de los frames
 
-def _minus(name):
+def _minus(name): 
+    """
+    Funcion que resta la comanda
+    """
     if memory[name][0] > 1:
-        memory[name][0] -= 1 #Restamos al numero de veces que fue pulsado el boton
+        memory[name][0] -= 1 #Restamos al numero de veces ordenaron el platillo
         memory[name][2] = memory[name][2] - prueba_botones[name] #restamos el precio
         memory[name][1]['text'] = f'{memory[name][0]}x {name}\n {memory[name][2]}$ '
 
-def _delete(platillo,name):
-    platillo.destroy()
-    memory.pop(name)
-    root.count -= 1
+def _delete(frame,name):
+    """
+    Funcion que elimina un platillo entero de la comanda
+    """
+    frame.destroy() #Quitamos el framde de la vista
+    memory.pop(name) #Borramos el label de la memoria
+    frames_comanda.pop(name) #Borramos el frame de la comanda
+    root.count -= 1 #Restamos el contador
+
+    for idx, key in enumerate(frames_comanda.keys()): #Ajustamos los grid de los frames
+        frames_comanda[key].grid(row=1,column=idx)
 
 def _charge(name):
-    precio = prueba_botones[name]
+    """
+    Funcion que nos sirve para poder cargar los platillos a la comanda
+    """
+    precio = prueba_botones[name] #Precio de los platillos
+
     if name in memory.keys(): #Caso de que ya este el nombre en la comanda
-        memory[name][0] += 1
-        memory[name].pop() #Eliminamos el resultado anterior para evitar que se aglomeren
-        memory[name].append(precio*memory[name][0]) # precio multiplicado
-        memory[name][1]['text'] = f'{memory[name][0]}x {name}\n {memory[name][2]}$'
+
+        memory[name][0] += 1 #Sumamos el platillo 
+        memory[name].pop() #Quitamos el precio anterior
+        memory[name].append(precio*memory[name][0]) # Renovamos el precio
+        memory[name][1]['text'] = f'{memory[name][0]}x {name}\n {memory[name][2]}$' #Cambiamos el label
+
     else: #Caso de que no se haya añadido aun el nombre de la comanda
+
         memory[name] = [1] #Creamos una lista con el numero de veces que se ha invocado el platillo
-        platillo = Frame(sum_side) #hacemos un frame
-        platillo.grid(row=1,column=root.count,padx=5) #lo posicionamos utilizando el root.count
-        boton = Button(platillo,text='-',command=lambda :_minus(name))#creamos los botones para modificar la comanda
-        boton_2 = Button(platillo, text='x',command=lambda: _delete(platillo,name))
+        frames_comanda[name] = Frame(sum_side) #hacemos un frame y lo guardamos en una lista
+
+        frame = frames_comanda[name] #lo guardamos en una variable
+
+        frame.grid(row=1,column=root.count,padx=5) #lo posicionamos utilizando el root.count
+
+        boton = Button(frame,text='-',command=lambda :_minus(name))#creamos los botones para modificar la comanda
+        boton_2 = Button(frame, text='x',command=lambda : _delete(frame,name))
+
         boton.grid(row=0,column=0,sticky='e')
         boton_2.grid(row=0,column=1)
-        memory[name].append(Label(platillo,text=f'{name}\n{precio}$')) #colocamos el label en la memoria para poder trabajar con el más tarde
+
+        memory[name].append(Label(frame,text=f'{name}\n{precio}$')) #colocamos el label en la memoria para poder trabajar con el más tarde
         memory[name].append(precio)#colocamos el precio en la memoria
-        memory[name][1].grid(row=1,column=0) #la posicionamos
+
+        memory[name][1].grid(row=1,column=0) #posicionamos el label
+
         root.count += 1 #aumentamos el root.count para seguir posicionando
-    print(memory.keys())
 
 def _load_hero(dicti):
     """
