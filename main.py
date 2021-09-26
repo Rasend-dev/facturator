@@ -106,7 +106,7 @@ def _load_hero(dicti):
         price.grid(row=3,column=idx)
         if idx >= 5 and idx <= 9:
             price.grid(row=5,column=idx-5)
-        elif idx >= 10:
+        elif idx >= 10 and idx <= 14:
             price.grid(row=7,column=idx-10)
 
     #Carga de los botones
@@ -117,20 +117,24 @@ def _load_hero(dicti):
         platillo.grid(row=4,column=idx,padx=20) #Posicionamiento de los platillo
         if idx >= 5 and idx <= 9: 
             platillo.grid(row=6,column=idx-5,padx=20)
-        elif idx >= 10:
+        elif idx >= 10 and idx <= 14:
             platillo.grid(row=8,column=idx-10,padx=20)    
 
+#container
+container = Frame(root)
+container.grid(row=0,column=0,sticky='w')
+
 #slide side
-slide = LabelFrame(root,text='Export zone',padx=20,pady=130)
+slide = LabelFrame(container,text='Export zone',padx=20,pady=135)
 slide.grid(row=0,column=0,sticky='w')
 
 #principal side
-hero = LabelFrame(root,text='Este es la parte principal')
+hero = LabelFrame(container,text='Este es la parte principal')
 hero.grid(row=0,column=1,sticky='nw')
 
 #sum side
 sum_side = LabelFrame(root,text='esto es una prueba',pady=10)
-sum_side.grid(row=1,column=1,sticky='w')
+sum_side.grid(row=1,column=0,sticky='w')
 sum_button = Button(sum_side,text='hacer venta')
 sum_price = Label(sum_side)
 sum_button.grid(row=0,column=0)
