@@ -1,6 +1,8 @@
 import scrapy
 import os
 import pandas as pd
+from scrapy.crawler import CrawlerProcess
+from functions import verify, verify_folder, transform_data
 
 #Paginas de dolar-pesos
 
@@ -81,7 +83,7 @@ class usd_btc(scrapy.Spider):
         yield response.follow(USD_BTC[0], callback= self.coinmarketcap, cb_kwargs={'name':['investing'],'value':[investing_currency_btc]})
 
     def coinmarketcap(self, response, **kwargs):
-        coinmarket_currency_btc = response.xpath('//div[contains(@class,"sc")]/div[contains(@class,"priceValue")]/text()').get()    
+        coinmarket_currency_btc = response.xpath('//div[contains(@class,"sc")]/div[contains(@class,"priceValue")]/span/text()').get()    
         kwargs['name'].append('coinmarketcap')
         kwargs['value'].append(coinmarket_currency_btc)
         yield response.follow(USD_BTC[1], callback = self.gold_price, cb_kwargs=kwargs)
@@ -129,3 +131,16 @@ class usd_ves(scrapy.Spider):
 
         df = pd.DataFrame(kwargs)
         df.to_csv(os.path.join(RAW_PATH,'raw_usd_ves.csv'))
+
+verify_folder()
+verify()
+proccess = CrawlerProcess(
+    {
+    'USER_AGENT': "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36",
+    }
+)
+proccess.crawl(usd_cop)
+proccess.crawl(usd_btc)
+proccess.crawl(usd_ves)
+proccess.start()
+transform_data()

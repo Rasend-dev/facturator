@@ -128,12 +128,11 @@ def _writeCsv(data):
     A function that recieves the save transformed data in a csv file
     it recieves a list
     """
-    content = sorted(data)
-    content.append(DATE)
+    data.append(DATE)
     #Adding data in a csv file   
     with open(os.path.join(CSV_FILES,CSV_FILENAME), 'a',newline='') as outfile:
         writer = csv.writer(outfile)
-        writer.writerow(content)  
+        writer.writerow(data)  
 
 def _transform_ves(filename):
     """
@@ -143,18 +142,17 @@ def _transform_ves(filename):
     df = pd.read_csv(filename)
     transform = (df['value']
                 .apply(lambda x: x.replace('VES',''))
-                .apply(lambda x: x.replace('\r',''))
+                .apply(lambda x: x.replace(',','.'))
                 .apply(lambda x: x.replace('\n',''))
-                .apply(lambda x: x.replace(' ',''))
-                .apply(lambda x: x.replace('.',''))
-                .apply(lambda x: int(x[:7]) if x.count(',') >= 1 else int(x)) 
+                .apply(lambda x: x.replace('\r',''))
+                .apply(lambda x: float(x))
                 )
 
     df['value'] = transform
 
     df.to_csv(os.path.join(CLEAN_DATA,'clean_usd_ves.csv'))
 
-    return int(df['value'].mean())           
+    return round(df['value'].mean(),2)
 
 def _transform_btc_cop(filename):
     """
@@ -163,13 +161,12 @@ def _transform_btc_cop(filename):
     """
     df = pd.read_csv(filename)
     transform = (df['value']
-                .apply(lambda x: x.replace(',','.'))
-                .apply(lambda x: x.replace('$',''))
                 .apply(lambda x: x.replace('\n',''))
+                .apply(lambda x: x.replace('$',''))
                 .apply(lambda x: x.replace(' ',''))
-                .apply(lambda x: x[:x.find('.')] + x[x.find('.') + 1:])
-                .apply(lambda x: int(x[:x.find('.')]) if '.' in x else int(x))
-                )
+                .apply(lambda x: x[:6])
+                .apply(lambda x: x.replace(',',''))
+                .apply(lambda x: int(x.replace('.',''))))
 
     df['value'] = transform
 
@@ -187,5 +184,5 @@ def transform_data():
     mean_usd_cop = _transform_btc_cop(os.path.join(RAW_DATA,'raw_usd_cop.csv'))
     mean_usd_btc = _transform_btc_cop(os.path.join(RAW_DATA,'raw_usd_btc.csv'))
     mean_usd_ves = _transform_ves(os.path.join(RAW_DATA,'raw_usd_ves.csv'))
-    _writeCsv([mean_usd_btc,mean_usd_cop,mean_usd_ves])
+    _writeCsv([mean_usd_cop,mean_usd_btc,mean_usd_ves])
     _writeJson({'mean_usd_cop':mean_usd_cop,'mean_usd_btc':mean_usd_btc,'mean_usd_ves':mean_usd_ves})
