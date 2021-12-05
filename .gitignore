@@ -11,6 +11,7 @@ Scraper/__pycache__/
 Scraper/Scraper/spiders/__pycache__/
 Scraper/Scraper/__pycache__/
 *.pyc
+prueba.py
 #Json folder 
 Json_files/
 #history folder
