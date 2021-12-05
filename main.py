@@ -1,4 +1,6 @@
 from tkinter import *
+from tkinter import messagebox
+import pandas as pd
 import json
 import os
 import subprocess
@@ -16,26 +18,32 @@ entradas = {'Empanada': 1500,'cocacola':2000,'jugo de limon':1456,'Teriyaki':455
                     5444,'pulpo a la braza':4555,'orlando sabroso':10000,'Andrey mi fornite':3217,'empanada':13124
                     ,'cualquier cosa': 7722,'owo':9999,'el lol apesta':12312}
 
+
 def _show_currency():
-    subprocess.run(['py','run.py'],cwd='./Scraper/Scraper/spiders')
+    subprocess.run(['py','scraper.py'],cwd='./Scraper/Scraper/spiders')
     with open(os.path.join(PATH_JSON,'mean_currencies.json'), 'r+') as f:
+            global content #declaramos content de manera global
             content = json.load(f)
             f.seek(0)
-    label_currencies = Label(hero,text=f'Precio del COP: {content["mean_usd_cop"]}, Precio del USD: {content["mean_usd_ves"]}')        
-    label_currencies.grid(row=0,column=1)
+    label_currencies = Label(slide,text=f'Precio del COP: {content["mean_usd_cop"]},\n Precio del USD: {content["mean_usd_ves"]}')        
+    label_currencies.grid(row=0,column=0)
     button_slide['state'] = DISABLED
+
 
 comanda = {} #Posicionamiento en la comanda
 frames_comanda = {} #Memorizado de los frames de la comanda
 root.count = 0 #posicionamiento de los frames
+
 
 def _update_price(dicti):
     """
     Funcion que suma los precios de la comanda y los muestra
     """
     total_price = sum([dicti[i][2] for i in dicti]) #sumamos los precios de los platillos
-    sum_cop['text'] = f'Total pesos:\n{total_price}$'
-
+    sum_cop['text'] = f'Total Pesos:\n{total_price}$'
+    sum_usd['text'] = f'Total Dolares:\n{round(total_price/content["mean_usd_cop"],3)}$'
+    sum_ves['text'] = f'Total Bolivares:\n{round(content["mean_usd_ves"]*total_price,2)}$'
+    
 def _minus(name): 
     """
     Funcion que resta la comanda
@@ -45,6 +53,14 @@ def _minus(name):
         comanda[name][2] = comanda[name][2] - prueba_botones[name] #restamos el precio
         comanda[name][1]['text'] = f'{comanda[name][0]}x {name}\n {comanda[name][2]}$ '
         _update_price(comanda) #actualizamos los precios
+
+def _delete_comanda():
+    for i in frames_comanda.keys(): #Borramos los frames de la comanda
+        frames_comanda[i].destroy() 
+    comanda.clear() #Borramos la comanda
+    frames_comanda.clear() #Borramos los frames de la comanda
+    _update_price(comanda) #Actualizamos los precios
+    root.count = 0 #reiniciamos el contador para posicionarlos en la comanda
 
 def _delete(frame,name):
     """
@@ -75,6 +91,7 @@ def _charge(name,precio):
     else: #Caso de que no se haya añadido aun el nombre de la comanda
 
         comanda[name] = [1] #Creamos una lista con el numero de veces que se ha invocado el platillo
+        
         frames_comanda[name] = Frame(sum_side) #hacemos un frame y lo guardamos en un diccionario
 
         frame = frames_comanda[name] #lo guardamos en una variable para poder manipularlo
@@ -130,6 +147,17 @@ def _update_hero(frame,dicti):
         widget.destroy()
     _load_hero(dicti)
 
+def _make_sale():
+    if len(comanda) == 0:
+        messagebox.showinfo(title='Error',message='No hay nada que vender')
+    else:
+        names = [i + 'x' + str(comanda[i][0]) for i in comanda.keys()] 
+        prices_cop = [i[2] for i in comanda.values()] #precios en pesos
+        prices_usd = [round(i[2]/content["mean_usd_cop"],3) for i in comanda.values()] #precios en dolares
+        df = pd.DataFrame({'names':names,'prices_COP':prices_cop,'prices_USD':prices_usd})
+        df.to_csv('ventas.csv',index=False)
+        _delete_comanda()
+
 #container
 container = Frame(root)
 container.grid(row=0,column=0,sticky='w')
@@ -161,20 +189,20 @@ button_4.pack()
 #sum side
 sum_side = LabelFrame(root,text='esto es una prueba',pady=10)
 sum_side.grid(row=1,column=0,sticky='w')
-sum_button = Button(sum_side,text='hacer venta')
+sum_button = Button(sum_side,text='hacer venta',command = _make_sale)
 sum_cop = Label(sum_side)
-sum_ves = Label(sum_side)
 sum_usd = Label(sum_side)
+sum_ves = Label(sum_side)
 sum_button.grid(row=0,column=0)
-sum_cop.grid(row=0,column=1,sticky='w')
-sum_ves.grid(row=0,column=2,sticky='w')
-sum_usd.grid(row=0,column=3,sticky='w')
+sum_cop.grid(row=0,column=1,sticky='w',padx=5)
+sum_usd.grid(row=0,column=2,sticky='w',padx=5)
+sum_ves.grid(row=0,column=3,sticky='w',padx=5)
 
 #Slider part
 button_slide = Button(slide,text='Extract todays currency',padx=10,pady=10,command=_show_currency)
-button_register = Button(slide,text='Register today work',padx=10,pady=10)
-button_slide.grid(row=0,column=0,pady=10)
-button_register.grid(row=1,column=0)
+button_register = Button(slide,text='Register today work (z)',padx=10,pady=10)
+button_slide.grid(row=1,column=0,pady=10)
+button_register.grid(row=2,column=0)
 
 #Hero part
 value = StringVar()
